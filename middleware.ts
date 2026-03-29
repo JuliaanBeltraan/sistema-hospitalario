@@ -23,42 +23,7 @@ const PUBLIC_PATHS = [
 ];
 
 export async function middleware(request: NextRequest) {
-  // Crear response base que pasara por el middleware
-  const response = NextResponse.next({
-    request: { headers: request.headers },
-  });
-
-  // Crear cliente Supabase para el middleware
-  const supabase = createMiddlewareSupabaseClient(request, response);
-
-  // PASO CRITICO: Refrescar la sesion en cada request.
-  // Sin esto, la sesion expira y el usuario es desconectado.
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const pathname = request.nextUrl.pathname;
-
-  // Verificar si la ruta actual es publica
-  const isPublicPath = PUBLIC_PATHS.some((path) =>
-    pathname === path || pathname.startsWith(path + "/")
-  );
-
-  // Si no hay sesion y la ruta es protegida -> redirigir al login
-  if (!session && !isPublicPath) {
-    const loginUrl = new URL("/login", request.url);
-    // Guardar la URL original para redirigir despues del login
-    loginUrl.searchParams.set("redirectTo", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Si hay sesion y el usuario intenta ir al login -> redirigir al dashboard
-  if (session && pathname === "/login") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  // Continuar con la request normal
-  return response;
+  return NextResponse.next();
 }
 
 // Configurar en que rutas aplica el middleware
